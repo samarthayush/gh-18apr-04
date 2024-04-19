@@ -23,7 +23,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14' # Adjust the Node.js version as needed
+          node-version: '14'
       - name: Install Dependencies
         run: npm ci
       - name: Perform Lint test
@@ -42,7 +42,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14' # Adjust the Node.js version as needed
+          node-version: '14'
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
@@ -66,12 +66,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: dist-files
-          path: dist-files
+          path: build
       - name: Display Artifact Contents
-        run: ls -al dist-files
+        run: ls -al build
       - name: Azure Web App Deployment
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'NodejsApplication2024'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: dist-files
+          package: build
