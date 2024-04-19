@@ -2,7 +2,7 @@ name: Deploy React App to Azure Web App
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - 'feature/*'
   pull_request:
@@ -17,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v2
         with:
           node-version: '14' # Adjust the Node.js version as needed
       - name: Install Dependencies
@@ -32,19 +32,19 @@ jobs:
         run: npm run test
 
   BuildJob:
-    needs: LintTestJob 
+    needs: LintTestJob
     runs-on: ubuntu-latest
     steps:
       - name: Get the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v2
         with:
           node-version: '14' # Adjust the Node.js version as needed
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.os }}-dep-cache-${{ hashFiles('**/package-lock.json') }}
@@ -59,7 +59,7 @@ jobs:
           path: build/
 
   DeployJob:
-    needs: BuildJob 
+    needs: BuildJob
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact
