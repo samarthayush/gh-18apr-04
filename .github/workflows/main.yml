@@ -1,82 +1,77 @@
-name: Artifact
+name: Deploy React App to Azure Web App
+
 on:
-    push:
-        branches: 
-             - main
-             - 'feature/*'
-    pull_request:
-        types:
-             - opened
-             - closed
-             - edited
-        branches:
-             - 'main'
-             - 'feature/*'
-    workflow_dispatch:
+  push:
+    branches: 
+      - main
+      - 'feature/*'
+  pull_request:
+    types: [opened, closed, edited]
+    branches:
+      - 'main'
+      - 'feature/*'
+  workflow_dispatch:
+
 jobs:
-        LintTestJob:
-            runs-on: 'ubuntu-latest'
-            steps:
-              - name: Get the code
-                uses: actions/checkout@v4
-                with:
-                     fetch-depth: 0
-              - name: Install nodeJS
-                uses: actions/setup-node@v4
-                with:
-                      node-version: '18'
-              - name: install Dependencies
-                run: npm ci
-              - name: Dependencies cache
-                uses: actions/cache@v4
-                with:
-                  path: ~/.npm
-                  key: ${{ runner.os }}-dep-cache-${{hashFiles('**/package.json')}}
-          
-              - name: Perform Lint test
-                run: npm run lint
-              - name: Perform test
-                run: npm run test
-        BuildJob:
-            needs: LintTestJob 
-            runs-on: 'ubuntu-latest'
-            steps:
-              - name: Get the code
-                uses: actions/checkout@v4
-                with:
-                     fetch-depth: 0
-              - name: Install nodeJS
-                uses: actions/setup-node@v4
-                with:
-                      node-version: '18'
-              - name: Cache the dependency
-                uses: actions/cache@v4
-                with:
-                       path: ~/.npm
-                       key: ${{runner.os}}-dep-cache-${{hashFiles('**/package.json')}}
-              - name: install Dependencies
-                run: npm ci
-              - name: Perform Build
-                run: npm run build
-              - name: upload Artifacts
-                uses: actions/upload-artifact@v4
-                with:
-                      name: dist-files
-                      path: dist/
-        DeployJob:
-               needs: BuildJob 
-               runs-on: 'ubuntu-latest'
-               steps:
-                    - name: Download Artifact
-                      uses: actions/download-artifact@v4
-                      with:
-                            name: dist-files
-                    - name: Display the contents
-                      run: ls -al 
-                    - name: Azure Web App Deployment
-                      uses: azure/webapps-deploy@v2
-                      with:
-                        app-name: 'NodejsApplication2024'
-                        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-                        package: ${{ github.workspace }}/dist-files
-                            
+  LintTestJob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14' # Adjust the Node.js version as needed
+      - name: Install Dependencies
+        run: npm ci
+      - name: Perform Lint test
+        run: npm run lint
+      - name: Perform tests
+        run: npm run test
+
+  BuildJob:
+    needs: LintTestJob 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14' # Adjust the Node.js version as needed
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-dep-cache-${{ hashFiles('**/package-lock.json') }}
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files
+          path: build/
+
+  DeployJob:
+    needs: BuildJob 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+          path: dist-files
+      - name: Display Artifact Contents
+        run: ls -al dist-files
+      - name: Azure Web App Deployment
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'NodejsApplication2024'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: dist-files
